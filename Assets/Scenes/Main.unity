@@ -2693,8 +2693,8 @@ MonoBehaviour:
   _moveBlockTile: {fileID: 11400000, guid: c75bcee2d6a3f9344b9cec3d4f951288, type: 2}
   _playerTile: {fileID: 11400000, guid: 08d59816df20d1a4d826f2a44083071e, type: 2}
   _targetAreaTile: {fileID: 11400000, guid: 7472515da9382394e920654ad50396ec, type: 2}
-  _horizontalMaxSize: 0
-  _verticalMaxSize: 0
+  _horizontalMaxSize: 12
+  _verticalMaxSize: 12
 --- !u!4 &666679658
 Transform:
   m_ObjectHideFlags: 0
