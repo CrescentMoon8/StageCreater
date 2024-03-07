@@ -6,13 +6,15 @@
 // ---------------------------------------------------------
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.AddressableAssets;
 using System.IO;
 using System.Text;
 
 public class StageArrayDataForTilemap : MonoBehaviour
 {
 	#region 変数
-	private string _path = "Stage2";
+	private string _dataName = "Stage2";
+
 	private Tilemap _tilemap = default;
 	[Header("動かせないブロック")][SerializeField]
 	private TileBase _staticBlockTile = default;
@@ -97,7 +99,9 @@ public class StageArrayDataForTilemap : MonoBehaviour
 
 	private void StageDataToArray()
     {
-		using (StreamReader streamReader = new StreamReader(_path, Encoding.GetEncoding("UTF-8")))
+		var a = Addressables.LoadAssetAsync<TextAsset>(_dataName).WaitForCompletion();
+		string path = Path.GetFullPath(a);
+		using (StreamReader streamReader = new StreamReader(path, Encoding.GetEncoding("UTF-8")))
         {
 			string[] data = streamReader.ReadToEnd().Split(new char[] { '\r', '\n'});
 			_verticalMaxSize = data.Length;
