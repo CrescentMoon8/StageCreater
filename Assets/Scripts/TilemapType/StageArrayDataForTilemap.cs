@@ -99,8 +99,9 @@ public class StageArrayDataForTilemap : MonoBehaviour
 
 	private void StageDataToArray()
     {
-		var a = Addressables.LoadAssetAsync<TextAsset>(_dataName).WaitForCompletion();
+		/*var a = Addressables.LoadAssetAsync<TextAsset>(_dataName).WaitForCompletion();
 		string path = Path.GetFullPath(a);
+
 		using (StreamReader streamReader = new StreamReader(path, Encoding.GetEncoding("UTF-8")))
         {
 			string[] data = streamReader.ReadToEnd().Split(new char[] { '\r', '\n'});
@@ -116,7 +117,7 @@ public class StageArrayDataForTilemap : MonoBehaviour
 					StageArray[i, j] = int.Parse(line.Split(",")[j]);
 				}
 			}
-        }
+        }*/
 
 		/*for (int i = 0; i < _verticalMaxSize; i++)
 		{

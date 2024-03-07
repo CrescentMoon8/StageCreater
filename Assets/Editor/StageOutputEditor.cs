@@ -6,6 +6,7 @@
 // ---------------------------------------------------------
 using UnityEditor;
 using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.IO;
@@ -23,16 +24,16 @@ public class StageOutputEditor : EditorWindow
 
     private SerializedObject serializedObject = default;
 
-    [Header("対象タイル１")]
+    [Header("対象タイル１（出力値：１）")]
     [SerializeField]
     private TileBase _targetTile1 = default;
-    [Header("対象タイル２")]
+    [Header("対象タイル２（出力値：２）")]
     [SerializeField]
     private TileBase _targetTile2 = default;
-    [Header("対象タイル３")]
+    [Header("対象タイル３（出力値：３）")]
     [SerializeField]
     private TileBase _targetTile3 = default;
-    [Header("対象タイル４")]
+    [Header("対象タイル４（出力値：４）")]
     [SerializeField]
     private TileBase _targetTile4 = default;
 
@@ -107,13 +108,13 @@ public class StageOutputEditor : EditorWindow
                 }
             }
 
-            UnityEditor.AddressableAssets.Settings.AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
+            AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
 
             string guid = AssetDatabase.AssetPathToGUID(path);
 
-            UnityEditor.AddressableAssets.Settings.AddressableAssetGroup group = settings.DefaultGroup;
+            AddressableAssetGroup group = settings.DefaultGroup;
 
-            UnityEditor.AddressableAssets.Settings.AddressableAssetEntry stageFile = settings.CreateOrMoveEntry(guid, group);
+            AddressableAssetEntry stageFile = settings.CreateOrMoveEntry(guid, group);
 
             stageFile.SetAddress(_stageName);
 
