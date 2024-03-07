@@ -6,11 +6,13 @@
 // ---------------------------------------------------------
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using System.Collections;
+using System.IO;
+using System.Text;
 
 public class StageArrayDataForTilemap : MonoBehaviour
 {
 	#region 変数
+	private string _path = "Stage2";
 	private Tilemap _tilemap = default;
 	[Header("動かせないブロック")][SerializeField]
 	private TileBase _staticBlockTile = default;
@@ -49,14 +51,16 @@ public class StageArrayDataForTilemap : MonoBehaviour
 	/// </summary>
 	public void Initialize()
 	{
+		StageDataToArray();
 		_tilemap = GameObject.FindWithTag("StageMap").GetComponent<Tilemap>();
 		// マップの最大サイズを設定する
-		SetStageMaxSize();
+		//SetStageMaxSize();
 		// ステージ、ターゲットの配列の大きさを設定する
-		StageArray = new int[_verticalMaxSize, _horizontalMaxSize];
-		TargetData = new int[_verticalMaxSize, _horizontalMaxSize];
+		//StageArray = new int[_verticalMaxSize, _horizontalMaxSize];
+		//TargetData = new int[_verticalMaxSize, _horizontalMaxSize];
 		// マップイメージを配列に格納する
-		ImageToArray();
+		//ImageToArray();
+
 	}
 
 	/// <summary>
@@ -82,17 +86,76 @@ public class StageArrayDataForTilemap : MonoBehaviour
 		}
 	}
 
-	/// <summary>
+	/*/// <summary>
 	/// マップの最大サイズを設定する
 	/// </summary>
 	private void SetStageMaxSize()
 	{
 		_horizontalMaxSize = _tilemap.cellBounds.max.x;
 		_verticalMaxSize = -_tilemap.cellBounds.min.y;
-		Debug.Log(_tilemap.GetTile(new Vector3Int(0, -1)));
+	}*/
+
+	private void StageDataToArray()
+    {
+		using (StreamReader streamReader = new StreamReader(_path, Encoding.GetEncoding("UTF-8")))
+        {
+			string[] data = streamReader.ReadToEnd().Split(new char[] { '\r', '\n'});
+			_verticalMaxSize = data.Length;
+			_horizontalMaxSize = data[0].Length;
+
+            for (int i = 0; i < _verticalMaxSize; i++)
+            {
+				string line = streamReader.ReadLine();
+
+				for (int j = 0; j < _horizontalMaxSize; j++)
+                {
+					StageArray[i, j] = int.Parse(line.Split(",")[j]);
+				}
+			}
+        }
+
+		/*for (int i = 0; i < _verticalMaxSize; i++)
+		{
+			for (int j = 0; j < _horizontalMaxSize; j++)
+			{
+				// ワールド座標とタイルマップ座標のずれをなくすため＋１する
+				// 座標と配列番号を合わせるためにマイナスをつける
+				Vector3Int searchPos = new Vector3Int(j, -i);
+
+				// 指定した座標にタイルがなければ処理をスキップする
+				if (!_tilemap.HasTile(searchPos))
+				{
+					continue;
+				}
+
+				// 指定した座標のタイルによって配列情報をセットする
+				if (_tilemap.GetTile(searchPos).Equals(_staticBlockTile))
+				{
+					StageArray[i, j] = ConstantForGame.STATIC_BLOCK;
+				}
+				else if (_tilemap.GetTile(searchPos).Equals(_moveBlockTile))
+				{
+					StageArray[i, j] = ConstantForGame.MOVE_BLOCK;
+				}
+				else if (_tilemap.GetTile(searchPos).Equals(_playerTile))
+				{
+					StageArray[i, j] = ConstantForGame.PLAYER;
+
+					// プレイヤーの座標を代入する
+					PlayerPosition = new Vector2Int(i, j);
+				}
+				else if (_tilemap.GetTile(searchPos).Equals(_targetAreaTile))
+				{
+					StageArray[i, j] = ConstantForGame.TARGET_AREA;
+				}
+			}
+		}
+
+		// ステージの配列情報をターゲット判定用の配列へコピーする
+		TargetData = (int[,])StageArray.Clone();*/
 	}
 
-	private void ImageToArray()
+	/*private void ImageToArray()
 	{
         for (int i = 0; i < _verticalMaxSize; i++)
         {
@@ -133,7 +196,7 @@ public class StageArrayDataForTilemap : MonoBehaviour
 
 		// ステージの配列情報をターゲット判定用の配列へコピーする
 		TargetData = (int[,])StageArray.Clone();
-	}
+	}*/
 
 	/// <summary>
 	/// ステージにあるオブジェクトを取得する
