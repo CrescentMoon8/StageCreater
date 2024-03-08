@@ -19,7 +19,7 @@ public class StageOutputEditor : EditorWindow
     private Tilemap _targetTilemap = default;
 
     [SerializeField]
-    [Header("ステージ名（必ずナンバリングすること）例：Stage1,Stage2")]
+    [Header("ステージ名")]
     private string _stageName = default;
 
     private SerializedObject serializedObject = default;
