@@ -46,7 +46,7 @@ public class StageInputEditor : EditorWindow
     [MenuItem("Stage/StageInput", false, 1)]
     private static void ShowWindow()
     {
-        StageOutputEditor window = GetWindow<StageOutputEditor>();
+        StageInputEditor window = GetWindow<StageInputEditor>();
         window.titleContent = new GUIContent("StageInput");
     }
 
@@ -74,7 +74,7 @@ public class StageInputEditor : EditorWindow
         if (GUILayout.Button("ステージを生成"))
         {
             //TextAsset inputData = Addressables.LoadAssetAsync<TextAsset>(_stageName).WaitForCompletion();
-            string path = Path.GetFullPath(_stageName);
+            string path = Path.GetFullPath(_stageName + ".csv");
 
             using (StreamReader streamReader = new StreamReader(path, Encoding.GetEncoding("UTF-8")))
             {
