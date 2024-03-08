@@ -88,28 +88,36 @@ public class StageInputEditor : EditorWindow
 
                     for (int j = 0; j < _horizontalMaxSize; j++)
                     {
+                        SetTile(int.Parse(line.Split(",")[j]), j, i);
                         _stageArray[i, j] = int.Parse(line.Split(",")[j]);
                     }
                 }
             }
+
+            
         }
     }
 
-    private void SetTile(int number)
+    private void SetTile(int number, int x, int y)
     {
+        Vector3Int setPos = new Vector3Int(x, -y);
+
         switch (number)
         {
             case 1:
-
+                _targetTilemap.SetTile(setPos, _targetTile1);
                 break;
 
             case 2:
+                _targetTilemap.SetTile(setPos, _targetTile2);
                 break;
 
             case 3:
+                _targetTilemap.SetTile(setPos, _targetTile3);
                 break;
 
             case 4:
+                _targetTilemap.SetTile(setPos, _targetTile4);
                 break;
 
             default:

@@ -53,15 +53,14 @@ public class StageArrayDataForTilemap : MonoBehaviour
 	/// </summary>
 	public void Initialize()
 	{
-		StageDataToArray();
 		_tilemap = GameObject.FindWithTag("StageMap").GetComponent<Tilemap>();
 		// マップの最大サイズを設定する
-		//SetStageMaxSize();
+		SetStageMaxSize();
 		// ステージ、ターゲットの配列の大きさを設定する
 		//StageArray = new int[_verticalMaxSize, _horizontalMaxSize];
 		//TargetData = new int[_verticalMaxSize, _horizontalMaxSize];
 		// マップイメージを配列に格納する
-		//ImageToArray();
+		ImageToArray();
 
 	}
 
@@ -88,18 +87,18 @@ public class StageArrayDataForTilemap : MonoBehaviour
 		}
 	}
 
-	/*/// <summary>
-	/// マップの最大サイズを設定する
-	/// </summary>
-	private void SetStageMaxSize()
-	{
-		_horizontalMaxSize = _tilemap.cellBounds.max.x;
-		_verticalMaxSize = -_tilemap.cellBounds.min.y;
-	}*/
-
-	private void StageDataToArray()
+    /// <summary>
+    /// マップの最大サイズを設定する
+    /// </summary>
+    private void SetStageMaxSize()
     {
-		/*var a = Addressables.LoadAssetAsync<TextAsset>(_dataName).WaitForCompletion();
+        _horizontalMaxSize = _tilemap.cellBounds.max.x;
+        _verticalMaxSize = -_tilemap.cellBounds.min.y;
+    }
+
+    /*private void StageDataToArray()
+    {
+		*//*var a = Addressables.LoadAssetAsync<TextAsset>(_dataName).WaitForCompletion();
 		string path = Path.GetFullPath(a);
 
 		using (StreamReader streamReader = new StreamReader(path, Encoding.GetEncoding("UTF-8")))
@@ -119,98 +118,98 @@ public class StageArrayDataForTilemap : MonoBehaviour
 			}
         }*/
 
-		/*for (int i = 0; i < _verticalMaxSize; i++)
-		{
-			for (int j = 0; j < _horizontalMaxSize; j++)
-			{
-				// ワールド座標とタイルマップ座標のずれをなくすため＋１する
-				// 座標と配列番号を合わせるためにマイナスをつける
-				Vector3Int searchPos = new Vector3Int(j, -i);
+    /*for (int i = 0; i < _verticalMaxSize; i++)
+    {
+        for (int j = 0; j < _horizontalMaxSize; j++)
+        {
+            // ワールド座標とタイルマップ座標のずれをなくすため＋１する
+            // 座標と配列番号を合わせるためにマイナスをつける
+            Vector3Int searchPos = new Vector3Int(j, -i);
 
-				// 指定した座標にタイルがなければ処理をスキップする
-				if (!_tilemap.HasTile(searchPos))
-				{
-					continue;
-				}
+            // 指定した座標にタイルがなければ処理をスキップする
+            if (!_tilemap.HasTile(searchPos))
+            {
+                continue;
+            }
 
-				// 指定した座標のタイルによって配列情報をセットする
-				if (_tilemap.GetTile(searchPos).Equals(_staticBlockTile))
-				{
-					StageArray[i, j] = ConstantForGame.STATIC_BLOCK;
-				}
-				else if (_tilemap.GetTile(searchPos).Equals(_moveBlockTile))
-				{
-					StageArray[i, j] = ConstantForGame.MOVE_BLOCK;
-				}
-				else if (_tilemap.GetTile(searchPos).Equals(_playerTile))
-				{
-					StageArray[i, j] = ConstantForGame.PLAYER;
+            // 指定した座標のタイルによって配列情報をセットする
+            if (_tilemap.GetTile(searchPos).Equals(_staticBlockTile))
+            {
+                StageArray[i, j] = ConstantForGame.STATIC_BLOCK;
+            }
+            else if (_tilemap.GetTile(searchPos).Equals(_moveBlockTile))
+            {
+                StageArray[i, j] = ConstantForGame.MOVE_BLOCK;
+            }
+            else if (_tilemap.GetTile(searchPos).Equals(_playerTile))
+            {
+                StageArray[i, j] = ConstantForGame.PLAYER;
 
-					// プレイヤーの座標を代入する
-					PlayerPosition = new Vector2Int(i, j);
-				}
-				else if (_tilemap.GetTile(searchPos).Equals(_targetAreaTile))
-				{
-					StageArray[i, j] = ConstantForGame.TARGET_AREA;
-				}
-			}
-		}
+                // プレイヤーの座標を代入する
+                PlayerPosition = new Vector2Int(i, j);
+            }
+            else if (_tilemap.GetTile(searchPos).Equals(_targetAreaTile))
+            {
+                StageArray[i, j] = ConstantForGame.TARGET_AREA;
+            }
+        }
+    }
 
-		// ステージの配列情報をターゲット判定用の配列へコピーする
-		TargetData = (int[,])StageArray.Clone();*/
-	}
+    // ステージの配列情報をターゲット判定用の配列へコピーする
+    TargetData = (int[,])StageArray.Clone();*//*
+}*/
 
-	/*private void ImageToArray()
-	{
+    private void ImageToArray()
+    {
         for (int i = 0; i < _verticalMaxSize; i++)
         {
             for (int j = 0; j < _horizontalMaxSize; j++)
             {
-				// ワールド座標とタイルマップ座標のずれをなくすため＋１する
-				// 座標と配列番号を合わせるためにマイナスをつける
-				Vector3Int searchPos = new Vector3Int(j, -i);
+                // ワールド座標とタイルマップ座標のずれをなくすため＋１する
+                // 座標と配列番号を合わせるためにマイナスをつける
+                Vector3Int searchPos = new Vector3Int(j, -i);
 
-				// 指定した座標にタイルがなければ処理をスキップする
-				if (!_tilemap.HasTile(searchPos))
+                // 指定した座標にタイルがなければ処理をスキップする
+                if (!_tilemap.HasTile(searchPos))
                 {
-					continue;
+                    continue;
                 }
 
-				// 指定した座標のタイルによって配列情報をセットする
-				if(_tilemap.GetTile(searchPos).Equals(_staticBlockTile))
+                // 指定した座標のタイルによって配列情報をセットする
+                if (_tilemap.GetTile(searchPos).Equals(_staticBlockTile))
                 {
-					StageArray[i, j] = ConstantForGame.STATIC_BLOCK;
-				}
-				else if (_tilemap.GetTile(searchPos).Equals(_moveBlockTile))
-				{
-					StageArray[i, j] = ConstantForGame.MOVE_BLOCK;
-				}
-				else if (_tilemap.GetTile(searchPos).Equals(_playerTile))
-				{
-					StageArray[i, j] = ConstantForGame.PLAYER;
+                    StageArray[i, j] = ConstantForGame.STATIC_BLOCK;
+                }
+                else if (_tilemap.GetTile(searchPos).Equals(_moveBlockTile))
+                {
+                    StageArray[i, j] = ConstantForGame.MOVE_BLOCK;
+                }
+                else if (_tilemap.GetTile(searchPos).Equals(_playerTile))
+                {
+                    StageArray[i, j] = ConstantForGame.PLAYER;
 
-					// プレイヤーの座標を代入する
-					PlayerPosition = new Vector2Int(i, j);
-				}
-				else if (_tilemap.GetTile(searchPos).Equals(_targetAreaTile))
-				{
-					StageArray[i, j] = ConstantForGame.TARGET_AREA;
-				}
-			}
+                    // プレイヤーの座標を代入する
+                    PlayerPosition = new Vector2Int(i, j);
+                }
+                else if (_tilemap.GetTile(searchPos).Equals(_targetAreaTile))
+                {
+                    StageArray[i, j] = ConstantForGame.TARGET_AREA;
+                }
+            }
         }
 
-		// ステージの配列情報をターゲット判定用の配列へコピーする
-		TargetData = (int[,])StageArray.Clone();
-	}*/
+        // ステージの配列情報をターゲット判定用の配列へコピーする
+        TargetData = (int[,])StageArray.Clone();
+    }
 
-	/// <summary>
-	/// ステージにあるオブジェクトを取得する
-	/// </summary>
-	/// <param name="tagId">取得するオブジェクトを指定</param>
-	/// <param name="row"></param>
-	/// <param name="col"></param>
-	/// <returns></returns>
-	public TileBase GetStageObject(int row, int col)
+    /// <summary>
+    /// ステージにあるオブジェクトを取得する
+    /// </summary>
+    /// <param name="tagId">取得するオブジェクトを指定</param>
+    /// <param name="row"></param>
+    /// <param name="col"></param>
+    /// <returns></returns>
+    public TileBase GetStageObject(int row, int col)
 	{
         // rootObject内の全てのオブジェクトを検索する
         foreach (Vector3Int pos in _tilemap.cellBounds.allPositionsWithin)

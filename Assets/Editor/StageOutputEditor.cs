@@ -108,8 +108,11 @@ public class StageOutputEditor : EditorWindow
                 }
             }
 
+            AssetDatabase.Refresh();
+
             AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
 
+            Debug.Log(path);
             string guid = AssetDatabase.AssetPathToGUID(path);
 
             AddressableAssetGroup group = settings.DefaultGroup;
