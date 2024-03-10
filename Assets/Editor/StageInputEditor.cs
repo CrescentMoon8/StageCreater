@@ -7,41 +7,15 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using UnityEngine.Tilemaps;
+using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
-public class StageInputEditor : EditorWindow
+
+public class StageInputEditor : StageCreateEditor
 {
-    [SerializeField]
-    [Header("入力対象のタイルマップ")]
-    private Tilemap _targetTilemap = default;
-
-    [SerializeField]
-    [Header("生成したいステージ名")]
-    private string _stageName = default;
-
-    private SerializedObject serializedObject = default;
-
-    [Header("配置対象タイル１（入力値：１）")]
-    [SerializeField]
-    private TileBase _targetTile1 = default;
-    [Header("配置対象タイル２（入力値：２）")]
-    [SerializeField]
-    private TileBase _targetTile2 = default;
-    [Header("配置対象タイル３（入力値：３）")]
-    [SerializeField]
-    private TileBase _targetTile3 = default;
-    [Header("配置対象タイル４（入力値：４）")]
-    [SerializeField]
-    private TileBase _targetTile4 = default;
-
-    // ステージの横の最大サイズ
-    private int _horizontalMaxSize = default;
-    // ステージの縦の最大サイズ
-    private int _verticalMaxSize = default;
-
-    private int[,] _stageArray = default;
+    private const string STAGE_DATA_FOLDE = "Assets/StageData";
+    private List<string> _stageNameList = new List<string>();
+    private int _stageIndex = 0;
 
     [MenuItem("Stage/StageInput", false, 1)]
     private static void ShowWindow()
@@ -50,51 +24,48 @@ public class StageInputEditor : EditorWindow
         window.titleContent = new GUIContent("StageInput");
     }
 
-    private void OnEnable()
+    protected override void OnGUI()
     {
-        serializedObject = new SerializedObject(this);
-    }
+        base.InputProperty();
 
-    private void OnGUI()
-    {
-        // 対象のタイルマップをアタッチできるようにウィンドウに表示する
-        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetTilemap)}"));
+        var fileNames = Directory.GetFiles(STAGE_DATA_FOLDE);
 
-        // 対象のタイルをアタッチできるようにウィンドウに表示する
-        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetTile1)}"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetTile2)}"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetTile3)}"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetTile4)}"));
+        /*for (int i = 0; i < fileNames.Length; i++)
+        {
+            Debug.Log(fileNames[i]);
+        }*/
 
-        // ステージ名を入力できるようウィンドウに表示する
-        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_stageName)}"));
+        string[] stageNames = _stageNameList.ToArray();
 
-        serializedObject.ApplyModifiedProperties();
+        _stageIndex = EditorGUILayout.Popup(
+            label: new GUIContent("生成ステージ名"),
+            selectedIndex: _stageIndex,
+            displayedOptions: stageNames
+            );
 
         if (GUILayout.Button("ステージを生成"))
         {
-            //TextAsset inputData = Addressables.LoadAssetAsync<TextAsset>(_stageName).WaitForCompletion();
-            string path = Path.GetFullPath(_stageName + ".csv");
+            // タイルをすべて削除する
+            base._targetTilemap.ClearAllTiles();
 
-            using (StreamReader streamReader = new StreamReader(path, Encoding.GetEncoding("UTF-8")))
+            TextAsset inputData = Addressables.LoadAssetAsync<TextAsset>(stageNames[_stageIndex]).WaitForCompletion();
+            string textData =inputData.text;
+
+            string[] data = textData.Split(new char[] { '\r', '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
+            base._verticalMaxSize = data.Length;
+
+            string[] lineCheck = data[0].Split(",", System.StringSplitOptions.RemoveEmptyEntries);
+            base._horizontalMaxSize = lineCheck.Length;
+
+            for (int i = 0; i < base._verticalMaxSize; i++)
             {
-                string[] data = streamReader.ReadToEnd().Split(new char[] { '\r', '\n' });
-                _verticalMaxSize = data.Length;
-                _horizontalMaxSize = data[0].Length;
+                string[] line = data[i].Split(",", System.StringSplitOptions.RemoveEmptyEntries);
 
-                for (int i = 0; i < _verticalMaxSize; i++)
+                for (int j = 0; j < base._horizontalMaxSize; j++)
                 {
-                    string line = streamReader.ReadLine();
-
-                    for (int j = 0; j < _horizontalMaxSize; j++)
-                    {
-                        SetTile(int.Parse(line.Split(",")[j]), j, i);
-                        _stageArray[i, j] = int.Parse(line.Split(",")[j]);
-                    }
+                    SetTile(int.Parse(line[j]), j, i);
                 }
             }
-
-            
         }
     }
 

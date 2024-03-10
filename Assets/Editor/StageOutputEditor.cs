@@ -12,37 +12,11 @@ using UnityEngine.Tilemaps;
 using System.IO;
 using System.Text;
 
-public class StageOutputEditor : EditorWindow
+public class StageOutputEditor : StageCreateEditor
 {
     [SerializeField]
-    [Header("出力対象のタイルマップ")]
-    private Tilemap _targetTilemap = default;
-
-    [SerializeField]
     [Header("ステージ名")]
-    private string _stageName = default;
-
-    private SerializedObject serializedObject = default;
-
-    [Header("対象タイル１（出力値：１）")]
-    [SerializeField]
-    private TileBase _targetTile1 = default;
-    [Header("対象タイル２（出力値：２）")]
-    [SerializeField]
-    private TileBase _targetTile2 = default;
-    [Header("対象タイル３（出力値：３）")]
-    [SerializeField]
-    private TileBase _targetTile3 = default;
-    [Header("対象タイル４（出力値：４）")]
-    [SerializeField]
-    private TileBase _targetTile4 = default;
-
-    // ステージの横の最大サイズ
-    private int _horizontalMaxSize = default;
-    // ステージの縦の最大サイズ
-    private int _verticalMaxSize = default;
-
-    private int[,] _stageArray = default;
+    protected string _stageName = default;
 
     [MenuItem("Stage/StageOutput", false, 1)]
     private static void ShowWindow()
@@ -51,26 +25,12 @@ public class StageOutputEditor : EditorWindow
         window.titleContent = new GUIContent("StageOutput");
     }
 
-    private void OnEnable()
+    protected override void OnGUI()
     {
-        serializedObject = new SerializedObject(this);
-    }
-
-    private void OnGUI()
-    {
-        // 対象のタイルマップをアタッチできるようにウィンドウに表示する
-        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetTilemap)}"));
-
-        // 対象のタイルをアタッチできるようにウィンドウに表示する
-        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetTile1)}"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetTile2)}"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetTile3)}"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetTile4)}"));
-
         // ステージ名を入力できるようウィンドウに表示する
         EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_stageName)}"));
 
-        serializedObject.ApplyModifiedProperties();
+        base.InputProperty();
 
         if (GUILayout.Button("ステージ情報を出力"))
         {
@@ -84,7 +44,7 @@ public class StageOutputEditor : EditorWindow
             // マップの最大サイズを設定する
             SetStageMaxSize();
             // ステージ、ターゲットの配列の大きさを設定する
-            _stageArray = new int[_verticalMaxSize, _horizontalMaxSize];
+            _stageArray = new int[base._verticalMaxSize, base._horizontalMaxSize];
             // マップイメージを配列に格納する
             ImageToArray();
 
@@ -93,13 +53,13 @@ public class StageOutputEditor : EditorWindow
 
             using (StreamWriter streamWriter = new StreamWriter(path, false, Encoding.GetEncoding("UTF-8")))
             {
-                for (int y = 0; y < _verticalMaxSize; y++)
+                for (int y = 0; y < base._verticalMaxSize; y++)
                 {
-                    string[] array = new string[_horizontalMaxSize];
+                    string[] array = new string[base._horizontalMaxSize];
 
-                    for (int x = 0; x < _horizontalMaxSize; x++)
+                    for (int x = 0; x < base._horizontalMaxSize; x++)
                     {
-                        array[x] = _stageArray[y, x].ToString();
+                        array[x] = base._stageArray[y, x].ToString();
                     }
 
                     string row = string.Join(",", array);
@@ -108,11 +68,11 @@ public class StageOutputEditor : EditorWindow
                 }
             }
 
+            // Addressable登録時にファイルが見つからないことがあるため強制的に再読み込みする
             AssetDatabase.Refresh();
 
             AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
 
-            Debug.Log(path);
             string guid = AssetDatabase.AssetPathToGUID(path);
 
             AddressableAssetGroup group = settings.DefaultGroup;
