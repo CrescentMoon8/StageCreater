@@ -26,13 +26,6 @@ public class MoveManagerForTilemap : MonoBehaviour
 	// ブロックの移動チェックの実行回数
 	private int _moveBlockCheckCount = 0;
 
-	#region ターゲット
-	// ブロックがターゲットの上にある個数
-	private int _targetCount = 0;
-	// ターゲットの最大数
-	private int _targetMaxCount = 3;
-	#endregion
-
 	// ブロックを引ける状態かを表示するテキスト
 	private TMP_Text _isPullBlockModeText = default;
 	private string _pullBlockModeTextTag = "PullBlockModeText";
@@ -70,7 +63,7 @@ public class MoveManagerForTilemap : MonoBehaviour
 	private void MoveData(int preRow, int preCol, int nextRow, int nextCol)
     {
 		// 動かしたいオブジェクトを取得する
-		TileBase moveTile = _stageArrayDataForTilemap.GetStageObject(preRow, preCol);
+		TileBase moveTile = _stageArrayDataForTilemap.GetStageTile(preRow, preCol);
 
 		// オブジェクトが空じゃないか
 		if (moveTile != null)
@@ -107,7 +100,7 @@ public class MoveManagerForTilemap : MonoBehaviour
 			_stageArrayDataForTilemap.StageArray[row, col] != ConstantForGame.MOVE_BLOCK)
 		{
 			// ターゲットカウントを上げる
-			_targetCount++;
+			_stageArrayDataForTilemap.TargetCount++;
 
 			return true;
 		}
@@ -218,8 +211,8 @@ public class MoveManagerForTilemap : MonoBehaviour
 			if (_stageArrayDataForTilemap.TargetData[nextRow, nextCol] == ConstantForGame.TARGET_AREA && 
 				blockMoveFlag)
 			{
-				// ターゲットクリアカウントを下げる
-				_targetCount--;
+                // ターゲットクリアカウントを下げる
+                _stageArrayDataForTilemap.TargetCount--;
 			}
 			return blockMoveFlag;
 		}
@@ -262,26 +255,10 @@ public class MoveManagerForTilemap : MonoBehaviour
                 if (_stageArrayDataForTilemap.TargetData[preRow + (preRow - nextRow), preCol + (preCol - nextCol)] == ConstantForGame.TARGET_AREA && blockMoveFlag)
 				{
 					// ターゲットクリアカウントを下げる
-					_targetCount--;
+					_stageArrayDataForTilemap.TargetCount--;
 				}
 			}
 		}
-	}
-
-	/// <summary>
-	/// ブロックがターゲットに乗っているかの判定を行う
-	/// </summary>
-	/// <returns>ブロックがそろっているかの有無</returns>
-	public bool OnBlockAllTargetCheck()
-	{
-		// ターゲットクリア数とターゲットの最大数が一致したらブロックを破壊
-		if (_targetCount == _targetMaxCount)
-		{
-			// ターゲットクリア数を初期化する
-			_targetCount = 0;
-			return true;
-		}
-		return false;
 	}
 
 	/// <summary>

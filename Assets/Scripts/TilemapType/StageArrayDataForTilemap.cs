@@ -29,6 +29,12 @@ public class StageArrayDataForTilemap : MonoBehaviour
 
     private string[] _row = default;
     private string _stageName = "Stage";
+
+    // ブロックがターゲットの上にある個数
+    private int _targetCount = 0;
+    // ターゲットの最大数
+    private int _targetMaxCount = 3;
+
     #endregion
 
     #region プロパティ
@@ -43,6 +49,7 @@ public class StageArrayDataForTilemap : MonoBehaviour
 	public int HorizontalMaxSize { get { return _horizontalMaxSize; } }
 	// ステージの縦の最大サイズ
 	public int VerticalMaxSize { get { return _verticalMaxSize; } }
+    public int TargetCount { get { return _targetCount; } set { _targetCount = value; } }
 	#endregion
 
 	#region メソッド
@@ -209,20 +216,11 @@ public class StageArrayDataForTilemap : MonoBehaviour
     /// <param name="row"></param>
     /// <param name="col"></param>
     /// <returns></returns>
-    public TileBase GetStageObject(int row, int col)
+    public TileBase GetStageTile(int row, int col)
 	{
         // rootObject内の全てのオブジェクトを検索する
         foreach (Vector3Int pos in _tilemap.cellBounds.allPositionsWithin)
         {
-			/*Debug.LogError(_tilemap.GetTile(pos));
-			Vector3Int tilePos = pos + Vector3Int.up;
-
-            // オブジェクトの座標が渡された引数と同じだったら
-            if (tilePos.x == col && tilePos.y == -row)
-            {
-                return _tilemap.GetTile(tilePos);
-            }*/
-
 			if(pos.x == col && pos.y == -row)
             {
 				return _tilemap.GetTile(pos);
@@ -231,5 +229,21 @@ public class StageArrayDataForTilemap : MonoBehaviour
 
         return null;
     }
-	#endregion
+
+    /// <summary>
+	/// ブロックがターゲットに乗っているかの判定を行う
+	/// </summary>
+	/// <returns>ブロックがそろっているかの有無</returns>
+	public bool OnBlockAllTargetCheck()
+    {
+        // ターゲットクリア数とターゲットの最大数が一致したらブロックを破壊
+        if (_targetCount == _targetMaxCount)
+        {
+            // ターゲットクリア数を初期化する
+            _targetCount = 0;
+            return true;
+        }
+        return false;
+    }
+    #endregion
 }

@@ -50,7 +50,7 @@ public class StageInputEditor : StageCreateEditor
 
     private Vector2 _scrollPos = Vector2.zero;
 
-    Texture2D texture = default;
+    private bool _isCreate = false;
 
     [MenuItem("Stage/StageInput", false, 1)]
     private static void ShowWindow()
@@ -91,23 +91,24 @@ public class StageInputEditor : StageCreateEditor
 
         base.InputProperty();
 
-        StageInput(stageFiles);
+        if (GUILayout.Button("ステージを生成"))
+        {
+            StageInput(stageFiles);
+        }
 
         // レイアウトを調整するために隙間を作る
         GUILayout.Space(7f);
 
-        /*texture = Texture2D.whiteTexture;
-        GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
-        guiStyle.normal.background = texture;
-        GUILayout.Box("", guiStyle, GUILayout.Width(this.position.width), GUILayout.Height(5));*/
-
         InputRandomProperty();
 
-        RandomStageCreate();
+        if (GUILayout.Button("ランダムステージ生成"))
+        {
+            RandomStageCreate();
+        }
 
         EditorGUILayout.EndScrollView();
 
-        if (!_isTargetAreaCopy)
+        if (!_isTargetAreaCopy && _isCreate)
         {
             _targetAreaTilemap.ClearAllTiles();
         }
@@ -120,52 +121,51 @@ public class StageInputEditor : StageCreateEditor
     /// <param name="stageFiles"></param>
     private void StageInput(string[] stageFiles)
     {
-        if (GUILayout.Button("ステージを生成"))
+        // タイルをすべて削除する
+        base._stageTilemap.ClearAllTiles();
+
+        // ファイルから拡張子を取り除く
+        string stageName = stageFiles[_stageIndex].Replace(DELETE_EXTENSION, "");
+
+        // CSVファイルを読み込む
+        TextAsset inputData = Addressables.LoadAssetAsync<TextAsset>(stageName).WaitForCompletion();
+        string textData = inputData.text;
+
+        // 行単位に分割する
+        // そのままだと改行も入るため、RemoveEmptyEntriesで削除する
+        string[] row = textData.Split(new char[] { '\r', '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
+        // 行数を取得する
+        base._verticalMaxSize = row.Length;
+
+        int currentMaxSize = 0;
+
+        for (int i = 0; i < row.Length; i++)
         {
-            // タイルをすべて削除する
-            base._stageTilemap.ClearAllTiles();
+            // 列単位に分割する
+            string[] columnCheck = row[0].Split(",");
 
-            // ファイルから拡張子を取り除く
-            string stageName = stageFiles[_stageIndex].Replace(DELETE_EXTENSION, "");
-
-            // CSVファイルを読み込む
-            TextAsset inputData = Addressables.LoadAssetAsync<TextAsset>(stageName).WaitForCompletion();
-            string textData = inputData.text;
-
-            // 行単位に分割する
-            // そのままだと改行も入るため、RemoveEmptyEntriesで削除する
-            string[] row = textData.Split(new char[] { '\r', '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
-            // 行数を取得する
-            base._verticalMaxSize = row.Length;
-
-            int currentMaxSize = 0;
-
-            for (int i = 0; i < row.Length; i++)
+            if (currentMaxSize < columnCheck.Length)
             {
-                // 列単位に分割する
-                string[] columnCheck = row[0].Split(",");
-                
-                if(currentMaxSize < columnCheck.Length)
-                {
-                    currentMaxSize = columnCheck.Length;
-                }
-            }
-
-            // 列数を取得する
-            base._horizontalMaxSize = currentMaxSize;
-
-            for (int y = 0; y < base._verticalMaxSize; y++)
-            {
-                string[] column = row[y].Split(",");
-
-                for (int x = 0; x < base._horizontalMaxSize; x++)
-                {
-                    // ステージ情報とリストのインデックスを合わせるためにー１する
-                    // 例：動かせないブロック　ステージ情報→１　インデックス→０
-                    SetTile(int.Parse(column[x]) - 1, x, y);
-                }
+                currentMaxSize = columnCheck.Length;
             }
         }
+
+        // 列数を取得する
+        base._horizontalMaxSize = currentMaxSize;
+
+        for (int y = 0; y < base._verticalMaxSize; y++)
+        {
+            string[] column = row[y].Split(",");
+
+            for (int x = 0; x < base._horizontalMaxSize; x++)
+            {
+                // ステージ情報とリストのインデックスを合わせるためにー１する
+                // 例：動かせないブロック　ステージ情報→１　インデックス→０
+                SetTile(int.Parse(column[x]) - 1, x, y);
+            }
+        }
+
+        _isCreate = true;
     }
 
     /// <summary>
@@ -191,71 +191,70 @@ public class StageInputEditor : StageCreateEditor
     #region ステージのランダム生成
     private void RandomStageCreate()
     {
-        if (GUILayout.Button("ランダムステージ生成"))
+        // タイルがない座標を保管するリスト
+        List<Vector3Int> _emptyTilePosList = new List<Vector3Int>();
+
+        _setTileIndex = 0;
+
+        // ターゲットのタイルをリストから引き出すためのインデックス
+        int targetTileIndex = 0;
+
+        // ターゲットエリアのタイルの座標を保管するリスト
+        List<Vector3Int> targetTilePosList = new List<Vector3Int>();
+
+        // タイルをすべて削除する
+        base._stageTilemap.ClearAllTiles();
+
+        // 外壁の作成
+        for (int y = 0; y < _verticalStageSize; y++)
         {
-            // タイルがない座標を保管するリスト
-            List<Vector3Int> _emptyTilePosList = new List<Vector3Int>();
-
-            _setTileIndex = 0;
-
-            // ターゲットのタイルをリストから引き出すためのインデックス
-            int targetTileIndex = 0;
-
-            // ターゲットエリアのタイルの座標を保管するリスト
-            List<Vector3Int> targetTilePosList = new List<Vector3Int>();
-
-            // タイルをすべて削除する
-            base._stageTilemap.ClearAllTiles();
-
-            // 外壁の作成
-            for (int y = 0; y < _verticalStageSize; y++)
+            for (int x = 0; x < _horizontalStageSize; x++)
             {
-                for (int x = 0; x < _horizontalStageSize; x++)
+                if ((x == 0) || (x == _horizontalStageSize - 1) || (y == 0) || (y == _verticalStageSize - 1))
                 {
-                    if ((x == 0) || (x == _horizontalStageSize - 1) || (y == 0) || (y == _verticalStageSize - 1))
-                    {
-                        SetTile(_setTileIndex, x, y);
-                    }
-                    else
-                    {
-                        AddEmptyList(_emptyTilePosList, x, y);
-                    }
+                    SetTile(_setTileIndex, x, y);
                 }
-            }
-
-            for (int i = 0; i < _createAmountList.Count; i++)
-            {
-                for (int j = 0; j < _createAmountList[i]; j++)
+                else
                 {
-                    int index = Random.Range(0, _emptyTilePosList.Count);
-
-                    Vector3Int setTilePos = _emptyTilePosList[index];
-
-                    _stageTilemap.SetTile(setTilePos, _targetTileList[_setTileIndex]);
-
-                    if (_targetTileList[_setTileIndex] == _targetAreaTile)
-                    {
-                        targetTileIndex = _setTileIndex;
-
-                        targetTilePosList.Add(setTilePos);
-                    }
-
-                    _emptyTilePosList.RemoveAt(index);
-                }
-
-                _setTileIndex++;
-            }
-
-            if (_targetAreaTilemap != null)
-            {
-                _targetAreaTilemap.ClearAllTiles();
-
-                for (int i = 0; i < targetTilePosList.Count; i++)
-                {
-                    _targetAreaTilemap.SetTile(targetTilePosList[i], _targetTileList[targetTileIndex]);
+                    AddEmptyList(_emptyTilePosList, x, y);
                 }
             }
         }
+
+        for (int i = 0; i < _createAmountList.Count; i++)
+        {
+            for (int j = 0; j < _createAmountList[i]; j++)
+            {
+                int index = Random.Range(0, _emptyTilePosList.Count);
+
+                Vector3Int setTilePos = _emptyTilePosList[index];
+
+                _stageTilemap.SetTile(setTilePos, _targetTileList[_setTileIndex]);
+
+                if (_targetTileList[_setTileIndex] == _targetAreaTile)
+                {
+                    targetTileIndex = _setTileIndex;
+
+                    targetTilePosList.Add(setTilePos);
+                }
+
+                _emptyTilePosList.RemoveAt(index);
+            }
+
+            _setTileIndex++;
+        }
+
+        if (_targetAreaTilemap != null)
+        {
+            _targetAreaTilemap.ClearAllTiles();
+
+            for (int i = 0; i < targetTilePosList.Count; i++)
+            {
+                _targetAreaTilemap.SetTile(targetTilePosList[i], _targetTileList[targetTileIndex]);
+            }
+        }
+
+        _isCreate = true;
     }
 
     /// <summary>

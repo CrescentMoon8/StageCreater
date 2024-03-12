@@ -44,8 +44,8 @@ public class ResultScore : MonoBehaviour
     #region シーン名
     // タイトルシーン
     private string _title = "Title";
-	// ゲームシーン
-	private string _game = "Main";
+	// ステージセレクトシーン
+	private string _select = "Select";
 	#endregion
 
 	#endregion
@@ -85,7 +85,7 @@ public class ResultScore : MonoBehaviour
 		if (Input.GetButtonDown(_RetryInput))
 		{
 			//ゲーム画面へ移動する
-			SceneManager.LoadScene(_game);
+			SceneManager.LoadScene(_select);
 		}
 	}
 	#endregion

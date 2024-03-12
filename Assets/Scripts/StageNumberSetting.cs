@@ -14,14 +14,22 @@ public class StageNumberSetting : MonoBehaviour
 	#region 変数
 	[SerializeField]
 	private EventSystem eventSystem = default;
-	#endregion
+    #endregion
 
-	#region プロパティ
+    #region プロパティ
 
-	#endregion
+    #endregion
 
-	#region メソッド
-	public void PushButton()
+    #region メソッド
+    private void Update()
+    {
+        if(Input.GetMouseButtonDown(0))
+        {
+
+        }
+    }
+
+    public void PushButton()
     {
 		// 押されたボタンが何番目のオブジェクトか取得する
 		// ０スタートのため＋１する

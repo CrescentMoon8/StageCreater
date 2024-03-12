@@ -106,7 +106,6 @@ public class GameControllerForTilemap : MonoBehaviour
 		// 各クラスの初期化
 		_stageArrayDataForTilemap = GetComponent<StageArrayDataForTilemap>();
 		_moveManagerForTilemap = GetComponent<MoveManagerForTilemap>();
-		_scoreManagerForTilemap = GetComponent<ScoreManagerForTilemap>();
 	}
 
 	/// <summary>
@@ -233,9 +232,10 @@ public class GameControllerForTilemap : MonoBehaviour
 				}
 
 				// ブロックがそろった判定
-				if (_moveManagerForTilemap.OnBlockAllTargetCheck())
+				if (_stageArrayDataForTilemap.OnBlockAllTargetCheck())
 				{
-					// 状態をブロック破壊に移行する
+					// 状態をゲーム終了に移行する
+					_gameState = GameState.End;
 				}
 				break;
 
@@ -245,8 +245,6 @@ public class GameControllerForTilemap : MonoBehaviour
 				// ゲームが終了してから指定秒数経過したか
 				if (_afterGameTime >= MOVE_SCENE_TIME)
 				{
-					// スコアを保存する
-					PlayerPrefs.SetInt(_score, _scoreManagerForTilemap.Score);
 					// リザルトへ移動する
 					SceneManager.LoadScene(_result);
 				}
