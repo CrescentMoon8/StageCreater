@@ -16,8 +16,8 @@ public class ConstantForGame
     public const int NO_BLOCK = 0;
 	public const int STATIC_BLOCK = 1;
 	public const int MOVE_BLOCK = 2;
-	public const int PLAYER = 3;
-	public const int TARGET_AREA = 4;
+    public const int TARGET_AREA = 3;
+    public const int PLAYER = 4;
     #endregion
 
     #region 達成度

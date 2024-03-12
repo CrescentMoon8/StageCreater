@@ -42,7 +42,6 @@ public class MoveManagerForTilemap : MonoBehaviour
 
 	// 各クラスの定義
 	private StageArrayDataForTilemap _stageArrayDataForTilemap = default;
-	private BlockProcessForTilemap _blockProcessForTilemap = default;
 
 	#endregion
 
@@ -54,7 +53,6 @@ public class MoveManagerForTilemap : MonoBehaviour
     {
 		// 各クラスの初期化
 		_stageArrayDataForTilemap = GetComponent<StageArrayDataForTilemap>();
-		_blockProcessForTilemap = GetComponent<BlockProcessForTilemap>();
 
 		// ブロックを引ける状態かを表示するテキストを取得する
 		_isPullBlockModeText = GameObject.FindWithTag(_pullBlockModeTextTag).GetComponent<TMP_Text>();

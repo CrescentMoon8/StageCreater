@@ -7,8 +7,10 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditorInternal;
 
 
 public class StageInputEditor : StageCreateEditor
@@ -19,7 +21,36 @@ public class StageInputEditor : StageCreateEditor
     private const string DELETE_EXTENSION = ".csv";
     // 検索するフォルダー
     private const string STAGE_DATA_FOLDE = "Assets/StageData";
+    // ドロップダウンのインデックス
     private int _stageIndex = 0;
+
+    [Header("生成するステージの縦の大きさ")]
+    [SerializeField]
+    private int _verticalStageSize = 0;
+    [Header("生成するステージの横の大きさ")]
+    [SerializeField]
+    private int _horizontalStageSize = 0;
+    [Header("対象タイル")]
+    [SerializeField]
+    protected List<int> _createAmountList = new List<int>();
+    private ReorderableList _reorderableList = default;
+
+    [Header("ターゲットエリアを描画用のタイルマップにコピーするか")]
+    [SerializeField]
+    private bool _isTargetAreaCopy = false;
+    [Header("描画用のターゲットエリアを持つタイルマップ")]
+    [SerializeField]
+    private Tilemap _targetAreaTilemap = default;
+    [Header("ターゲットエリアのタイル")]
+    [SerializeField]
+    private TileBase _targetAreaTile = default;
+
+    // タイルをリストから引き出すためのインデックス
+    private int _setTileIndex = 0;
+
+    private Vector2 _scrollPos = Vector2.zero;
+
+    Texture2D texture = default;
 
     [MenuItem("Stage/StageInput", false, 1)]
     private static void ShowWindow()
@@ -30,8 +61,10 @@ public class StageInputEditor : StageCreateEditor
 
     protected override void OnGUI()
     {
+        _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
+
         // レイアウトを調整するために隙間を作る
-        GUILayout.Space(30f);
+        GUILayout.Space(15f);
 
         // 指定したフォルダーのファイルを全て取得する
         var fileNames = Directory.GetFiles(STAGE_DATA_FOLDE);
@@ -58,10 +91,39 @@ public class StageInputEditor : StageCreateEditor
 
         base.InputProperty();
 
+        StageInput(stageFiles);
+
+        // レイアウトを調整するために隙間を作る
+        GUILayout.Space(7f);
+
+        /*texture = Texture2D.whiteTexture;
+        GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
+        guiStyle.normal.background = texture;
+        GUILayout.Box("", guiStyle, GUILayout.Width(this.position.width), GUILayout.Height(5));*/
+
+        InputRandomProperty();
+
+        RandomStageCreate();
+
+        EditorGUILayout.EndScrollView();
+
+        if (!_isTargetAreaCopy)
+        {
+            _targetAreaTilemap.ClearAllTiles();
+        }
+    }
+
+    #region ステージを読み込んで生成
+    /// <summary>
+    /// CSVファイルを読み込んでステージを生成する
+    /// </summary>
+    /// <param name="stageFiles"></param>
+    private void StageInput(string[] stageFiles)
+    {
         if (GUILayout.Button("ステージを生成"))
         {
             // タイルをすべて削除する
-            base._targetTilemap.ClearAllTiles();
+            base._stageTilemap.ClearAllTiles();
 
             // ファイルから拡張子を取り除く
             string stageName = stageFiles[_stageIndex].Replace(DELETE_EXTENSION, "");
@@ -76,10 +138,21 @@ public class StageInputEditor : StageCreateEditor
             // 行数を取得する
             base._verticalMaxSize = row.Length;
 
-            // 列単位に分割する
-            string[] columnCheck = row[0].Split(",");
+            int currentMaxSize = 0;
+
+            for (int i = 0; i < row.Length; i++)
+            {
+                // 列単位に分割する
+                string[] columnCheck = row[0].Split(",");
+                
+                if(currentMaxSize < columnCheck.Length)
+                {
+                    currentMaxSize = columnCheck.Length;
+                }
+            }
+
             // 列数を取得する
-            base._horizontalMaxSize = columnCheck.Length;
+            base._horizontalMaxSize = currentMaxSize;
 
             for (int y = 0; y < base._verticalMaxSize; y++)
             {
@@ -87,7 +160,9 @@ public class StageInputEditor : StageCreateEditor
 
                 for (int x = 0; x < base._horizontalMaxSize; x++)
                 {
-                    SetTile(int.Parse(column[x]), x, y);
+                    // ステージ情報とリストのインデックスを合わせるためにー１する
+                    // 例：動かせないブロック　ステージ情報→１　インデックス→０
+                    SetTile(int.Parse(column[x]) - 1, x, y);
                 }
             }
         }
@@ -96,33 +171,148 @@ public class StageInputEditor : StageCreateEditor
     /// <summary>
     /// 指定したタイルマップ座標に対象のタイルを設置する
     /// </summary>
-    /// <param name="number"></param>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    private void SetTile(int number, int x, int y)
+    /// <param name="tileIndex">配置するタイルを引き出すためのインデックス</param>
+    /// <param name="x">横座標</param>
+    /// <param name="y">縦座標</param>
+    private void SetTile(int tileIndex, int x, int y)
     {
-        Vector3Int setPos = new Vector3Int(x, -y);
-
-        switch (number)
+        // 値がー１以下だったら処理をスキップする
+        if (tileIndex < 0)
         {
-            case 1:
-                _targetTilemap.SetTile(setPos, _targetTile1);
-                break;
+            return;
+        }
 
-            case 2:
-                _targetTilemap.SetTile(setPos, _targetTile2);
-                break;
+        Vector3Int setTilePos = new Vector3Int(x, -y);
 
-            case 3:
-                _targetTilemap.SetTile(setPos, _targetTile3);
-                break;
+        _stageTilemap.SetTile(setTilePos, _targetTileList[tileIndex]);
+    }
+    #endregion
 
-            case 4:
-                _targetTilemap.SetTile(setPos, _targetTile4);
-                break;
+    #region ステージのランダム生成
+    private void RandomStageCreate()
+    {
+        if (GUILayout.Button("ランダムステージ生成"))
+        {
+            // タイルがない座標を保管するリスト
+            List<Vector3Int> _emptyTilePosList = new List<Vector3Int>();
 
-            default:
-                break;
+            _setTileIndex = 0;
+
+            // ターゲットのタイルをリストから引き出すためのインデックス
+            int targetTileIndex = 0;
+
+            // ターゲットエリアのタイルの座標を保管するリスト
+            List<Vector3Int> targetTilePosList = new List<Vector3Int>();
+
+            // タイルをすべて削除する
+            base._stageTilemap.ClearAllTiles();
+
+            // 外壁の作成
+            for (int y = 0; y < _verticalStageSize; y++)
+            {
+                for (int x = 0; x < _horizontalStageSize; x++)
+                {
+                    if ((x == 0) || (x == _horizontalStageSize - 1) || (y == 0) || (y == _verticalStageSize - 1))
+                    {
+                        SetTile(_setTileIndex, x, y);
+                    }
+                    else
+                    {
+                        AddEmptyList(_emptyTilePosList, x, y);
+                    }
+                }
+            }
+
+            for (int i = 0; i < _createAmountList.Count; i++)
+            {
+                for (int j = 0; j < _createAmountList[i]; j++)
+                {
+                    int index = Random.Range(0, _emptyTilePosList.Count);
+
+                    Vector3Int setTilePos = _emptyTilePosList[index];
+
+                    _stageTilemap.SetTile(setTilePos, _targetTileList[_setTileIndex]);
+
+                    if (_targetTileList[_setTileIndex] == _targetAreaTile)
+                    {
+                        targetTileIndex = _setTileIndex;
+
+                        targetTilePosList.Add(setTilePos);
+                    }
+
+                    _emptyTilePosList.RemoveAt(index);
+                }
+
+                _setTileIndex++;
+            }
+
+            if (_targetAreaTilemap != null)
+            {
+                _targetAreaTilemap.ClearAllTiles();
+
+                for (int i = 0; i < targetTilePosList.Count; i++)
+                {
+                    _targetAreaTilemap.SetTile(targetTilePosList[i], _targetTileList[targetTileIndex]);
+                }
+            }
         }
     }
+
+    /// <summary>
+    /// タイルが空の座標をリストに追加する
+    /// </summary>
+    /// <param name="emptyTilePosList">タイルがない座標を保管するリスト</param>
+    /// <param name="x">横座標</param>
+    /// <param name="y">縦座標</param>
+    private void AddEmptyList(List<Vector3Int> emptyTilePosList, int x, int y)
+    {
+        Vector3Int setTilePos = new Vector3Int(x, -y);
+
+        emptyTilePosList.Add(setTilePos);
+    }
+
+    /// <summary>
+    /// ステージのランダム生成に用いるプロパティを表示、反映させる
+    /// </summary>
+    private void InputRandomProperty()
+    {
+        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_verticalStageSize)}"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_horizontalStageSize)}"));
+
+        SerializedProperty list = serializedObject.FindProperty($"{nameof(_createAmountList)}");
+
+        // レイアウトを調整するために隙間を作る
+        GUILayout.Space(15f);
+
+        if (_reorderableList == null)
+        {
+            _reorderableList = new ReorderableList(serializedObject, list);
+
+            // プロパティの高さを指定
+            _reorderableList.elementHeight = 30f;
+
+            // タイトル描画時のコールバック
+            // 上書きしてEditorGUIを使えばタイトル部分を自由にレイアウトできる
+            _reorderableList.drawHeaderCallback = rect => EditorGUI.LabelField(rect, "タイルの生成量");
+
+            // 要素の描画時のコールバック
+            // 上書きしてEditorGUIを使えば自由にレイアウトできる
+            _reorderableList.drawElementCallback = (rect, index, isActive, isFocused) =>
+            {
+                var elementProperty = list.GetArrayElementAtIndex(index);
+                rect.height = EditorGUIUtility.singleLineHeight;
+                EditorGUI.PropertyField(rect, elementProperty, new GUIContent("（値：" + (index + 1) + "）のタイルの生成量"));
+            };
+        }
+
+        _reorderableList.DoLayoutList();
+
+        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_isTargetAreaCopy)}"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetAreaTilemap)}"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty($"{nameof(_targetAreaTile)}"));
+
+        // 入力された値を反映させる
+        serializedObject.ApplyModifiedProperties();
+    }
+    #endregion
 }

@@ -21,23 +21,13 @@ public class GameControllerForTilemap : MonoBehaviour
 	/// １　ゲーム開始
 	/// ２　ポーズ
 	/// ３　プレイ中
-	/// ４　ステージ生成
-	/// ５　ブロック生成
-	/// ６　ブロック破壊
-	/// ７　スコア加算
-	/// ８　難易度変更
-	/// ９　ゲーム終了
+	/// ４　ゲーム終了
 	/// </summary>
 	private enum GameState
 	{
 		Start,
 		Stop,
 		Play,
-		CreateStage,
-		CreateBlock,
-		DeleteBlock,
-		Score,
-		DifficultUp,
 		End,
 	}
 
@@ -102,7 +92,6 @@ public class GameControllerForTilemap : MonoBehaviour
 	// 各クラスの定義
 	private StageArrayDataForTilemap _stageArrayDataForTilemap = default;
 	private MoveManagerForTilemap _moveManagerForTilemap = default;
-	private BlockProcessForTilemap _blockProcessForTilemap = default;
 	private ScoreManagerForTilemap _scoreManagerForTilemap = default;
 	#endregion
 
@@ -117,10 +106,7 @@ public class GameControllerForTilemap : MonoBehaviour
 		// 各クラスの初期化
 		_stageArrayDataForTilemap = GetComponent<StageArrayDataForTilemap>();
 		_moveManagerForTilemap = GetComponent<MoveManagerForTilemap>();
-		_blockProcessForTilemap = GetComponent<BlockProcessForTilemap>();
 		_scoreManagerForTilemap = GetComponent<ScoreManagerForTilemap>();
-
-		_stageArrayDataForTilemap.Initialize();
 	}
 
 	/// <summary>
@@ -132,8 +118,8 @@ public class GameControllerForTilemap : MonoBehaviour
 		switch (_gameState)
 		{
 			case GameState.Start:
-				// 状態をステージ生成に移行する
-				_gameState = GameState.CreateStage;
+				_stageArrayDataForTilemap.Initialize();
+				_gameState = GameState.Play;
 				break;
 
 			case GameState.Stop:
@@ -159,18 +145,6 @@ public class GameControllerForTilemap : MonoBehaviour
 				break;
 
 			case GameState.Play:
-				// 動かせるブロックを生成するまでの時間を加算する
-				_createBlockTime += Time.deltaTime;
-
-				// 一定時間でブロックを生成する
-				if (_createBlockTime >= _createBlockInterval)
-				{
-					// ステージの空マスを抽出する
-					_blockProcessForTilemap.SetCell();
-					// 状態をブロック生成へ移行する
-					_gameState = GameState.CreateBlock;
-				}
-
 				// Pキー、Xボタンが押されたか
 				if (Input.GetButtonDown(_poseInput))
 				{
@@ -262,79 +236,7 @@ public class GameControllerForTilemap : MonoBehaviour
 				if (_moveManagerForTilemap.OnBlockAllTargetCheck())
 				{
 					// 状態をブロック破壊に移行する
-					_gameState = GameState.DeleteBlock;
 				}
-				break;
-
-			case GameState.CreateStage:
-				// 空マスの情報をリストに追加する
-				_blockProcessForTilemap.SetCell();
-				// 動かせないブロック及びM動かせるブロックをランダムに配置する
-				_blockProcessForTilemap.CreateStage();
-				// 状態をプレイ中に移行する
-				_gameState = GameState.Play;
-				break;
-
-			case GameState.CreateBlock:
-				// ランダムにブロックを生成する
-				_blockProcessForTilemap.CreateMoveBlock();
-
-				_createBlockTime = 0;
-
-				if (_blockProcessForTilemap.IsGameOver)
-				{
-					_gameState = GameState.End;
-				}
-				else
-				{
-					_gameState = GameState.Play;
-				}
-				break;
-
-			case GameState.DeleteBlock:
-				// ブロックを削除する
-				_blockProcessForTilemap.DeleteBlock();
-
-				_gameState = GameState.Score;
-				break;
-
-			case GameState.Score:
-				// ブロックを引ける状態を解除する
-				_moveManagerForTilemap.SetFalsePullMode();
-				// スコアとゲームレベルの更新を行う
-				_scoreManagerForTilemap.ScoreUpdate();
-
-				if (_scoreManagerForTilemap.LevelUpdate())
-				{
-					_gameState = GameState.DifficultUp;
-				}
-
-				_gameState = GameState.Play;
-				break;
-
-			case GameState.DifficultUp:
-				// ゲームレベルが上がったらブロックの生成間隔を短くし、動かせないブロックを追加する
-				switch (_scoreManagerForTilemap.GameLevel)
-				{
-					case ConstantForGame.BEGINNER:
-						_createBlockInterval = ConstantForGame.EASY;
-						break;
-					case ConstantForGame.INTERMEDIATE:
-						_createBlockInterval = ConstantForGame.NORMAL;
-						_blockProcessForTilemap.CreateStage();
-						break;
-					case ConstantForGame.EXPERT:
-						_createBlockInterval = ConstantForGame.HARD;
-						break;
-					case ConstantForGame.MASTER:
-						_createBlockInterval = ConstantForGame.VERYHARD;
-						_blockProcessForTilemap.CreateStage();
-						break;
-					default:
-						break;
-				}
-
-				_gameState = GameState.Play;
 				break;
 
 			case GameState.End:

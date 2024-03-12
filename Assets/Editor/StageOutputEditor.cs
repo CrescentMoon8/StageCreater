@@ -15,7 +15,7 @@ using System.Text;
 public class StageOutputEditor : StageCreateEditor
 {
     [SerializeField]
-    [Header("ステージ名")]
+    [Header("ステージ名（推奨：半角、ナンバリング）")]
     protected string _stageName = default;
 
     [MenuItem("Stage/StageOutput", false, 1)]
@@ -90,8 +90,11 @@ public class StageOutputEditor : StageCreateEditor
 	/// </summary>
 	private void SetStageMaxSize()
     {
-        _horizontalMaxSize = _targetTilemap.cellBounds.max.x;
-        _verticalMaxSize = -_targetTilemap.cellBounds.min.y;
+        _horizontalMaxSize = _stageTilemap.cellBounds.max.x + (-_stageTilemap.cellBounds.min.x);
+        _verticalMaxSize = _stageTilemap.cellBounds.max.y + (-_stageTilemap.cellBounds.min.y);
+
+        Debug.Log(_horizontalMaxSize);
+        Debug.Log(_verticalMaxSize);
     }
 
     private void ImageToArray()
@@ -105,28 +108,25 @@ public class StageOutputEditor : StageCreateEditor
                 Vector3Int searchPos = new Vector3Int(j, -i);
 
                 // 指定した座標にタイルがなければ処理をスキップする
-                if (!_targetTilemap.HasTile(searchPos))
+                if (!_stageTilemap.HasTile(searchPos))
                 {
                     continue;
                 }
 
-                // 指定した座標のタイルによって配列情報をセットする
-                if (_targetTilemap.GetTile(searchPos).Equals(_targetTile1))
-                {
-                    _stageArray[i, j] = 1;
-                }
-                else if (_targetTilemap.GetTile(searchPos).Equals(_targetTile2))
-                {
-                    _stageArray[i, j] = 2;
-                }
-                else if (_targetTilemap.GetTile(searchPos).Equals(_targetTile3))
-                {
-                    _stageArray[i, j] = 3;
-                }
-                else if (_targetTilemap.GetTile(searchPos).Equals(_targetTile4))
-                {
-                    _stageArray[i, j] = 4;
-                }
+                TileCheck(i, j, searchPos);
+            }
+        }
+    }
+
+    private void TileCheck(int i, int j, Vector3Int searchPos)
+    {
+        for (int k = 0; k < _targetTileList.Count; k++)
+        {
+            // 指定した座標のタイルによって配列情報をセットする
+            if (_stageTilemap.GetTile(searchPos).Equals(_targetTileList[k]))
+            {
+                // タイルが空の部分を０にするために＋１する
+                _stageArray[i, j] = k + 1;
             }
         }
     }
