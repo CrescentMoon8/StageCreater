@@ -200,6 +200,7 @@ public class MoveManagerForTilemap : MonoBehaviour
 		 * プレイヤーの移動先が動くブロックの時
 		 * ブロックの移動する処理を実行する
 		 */
+		Debug.Log(nextCol +""+ nextRow);
 		if (_stageArrayDataForTilemap.StageArray[nextRow, nextCol] == ConstantForGame.MOVE_BLOCK)
 		{
 			// ブロックを動かす

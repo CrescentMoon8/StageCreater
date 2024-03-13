@@ -12,6 +12,7 @@ TagManager:
   - SE
   - PullBlockModeText
   - StageMap
+  - TargetMap
   layers:
   - Default
   - TransparentFX

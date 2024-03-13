@@ -45,10 +45,17 @@ public class StageInputEditor : StageCreateEditor
     [SerializeField]
     private TileBase _targetAreaTile = default;
 
+    // ターゲットのタイルをリストから引き出すためのインデックス
+    private int _targetTileIndex = 0;
+
+    // ターゲットエリアのタイルの座標を保管するリスト
+    private List<Vector3Int> _targetTilePosList = new List<Vector3Int>();
+
     // タイルをリストから引き出すためのインデックス
     private int _setTileIndex = 0;
 
     private Vector2 _scrollPos = Vector2.zero;
+    private Vector2 _dropDownScrollPos = Vector2.zero;
 
     private bool _isCreate = false;
 
@@ -89,6 +96,8 @@ public class StageInputEditor : StageCreateEditor
             displayedOptions: stageFiles
             );
 
+        
+
         base.InputProperty();
 
         if (GUILayout.Button("ステージを生成"))
@@ -112,6 +121,8 @@ public class StageInputEditor : StageCreateEditor
         {
             _targetAreaTilemap.ClearAllTiles();
         }
+
+        _targetTilePosList.Clear();
     }
 
     #region ステージを読み込んで生成
@@ -165,6 +176,16 @@ public class StageInputEditor : StageCreateEditor
             }
         }
 
+        if (_targetAreaTilemap != null)
+        {
+            _targetAreaTilemap.ClearAllTiles();
+
+            for (int i = 0; i < _targetTilePosList.Count; i++)
+            {
+                _targetAreaTilemap.SetTile(_targetTilePosList[i], _targetTileList[_targetTileIndex]);
+            }
+        }
+
         _isCreate = true;
     }
 
@@ -185,6 +206,13 @@ public class StageInputEditor : StageCreateEditor
         Vector3Int setTilePos = new Vector3Int(x, -y);
 
         _stageTilemap.SetTile(setTilePos, _targetTileList[tileIndex]);
+
+        if (_targetTileList[tileIndex] == _targetAreaTile)
+        {
+            _targetTileIndex = tileIndex;
+
+            _targetTilePosList.Add(setTilePos);
+        }
     }
     #endregion
 
@@ -195,12 +223,6 @@ public class StageInputEditor : StageCreateEditor
         List<Vector3Int> _emptyTilePosList = new List<Vector3Int>();
 
         _setTileIndex = 0;
-
-        // ターゲットのタイルをリストから引き出すためのインデックス
-        int targetTileIndex = 0;
-
-        // ターゲットエリアのタイルの座標を保管するリスト
-        List<Vector3Int> targetTilePosList = new List<Vector3Int>();
 
         // タイルをすべて削除する
         base._stageTilemap.ClearAllTiles();
@@ -233,9 +255,9 @@ public class StageInputEditor : StageCreateEditor
 
                 if (_targetTileList[_setTileIndex] == _targetAreaTile)
                 {
-                    targetTileIndex = _setTileIndex;
+                    _targetTileIndex = _setTileIndex;
 
-                    targetTilePosList.Add(setTilePos);
+                    _targetTilePosList.Add(setTilePos);
                 }
 
                 _emptyTilePosList.RemoveAt(index);
@@ -248,9 +270,9 @@ public class StageInputEditor : StageCreateEditor
         {
             _targetAreaTilemap.ClearAllTiles();
 
-            for (int i = 0; i < targetTilePosList.Count; i++)
+            for (int i = 0; i < _targetTilePosList.Count; i++)
             {
-                _targetAreaTilemap.SetTile(targetTilePosList[i], _targetTileList[targetTileIndex]);
+                _targetAreaTilemap.SetTile(_targetTilePosList[i], _targetTileList[_targetTileIndex]);
             }
         }
 

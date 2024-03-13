@@ -17,8 +17,10 @@ public class ResultScore : MonoBehaviour
 {
     #region 変数
     #region 入力
-    // ゲームシーンへ移動するための入力
-    private string _RetryInput = "PullBlock";
+    // ステージセレクトシーンへ移動するための入力
+    private string _stageSelectInput = "Select";
+	// 次のステージシーンへ移動するための入力
+	private string _nextStageInput = "NextStage";
 	// タイトルへ移動するための入力
 	private string _goTitleInput = "GoTitle";
     #endregion
@@ -46,6 +48,8 @@ public class ResultScore : MonoBehaviour
     private string _title = "Title";
 	// ステージセレクトシーン
 	private string _select = "Select";
+	// ゲームシーン
+	private string _main = "Main";
 	#endregion
 
 	#endregion
@@ -56,8 +60,7 @@ public class ResultScore : MonoBehaviour
 	/// </summary>
 	private void Awake()
 	{
-		//スコアを表示するためのテキストを取得する
-		_scoreText = GameObject.FindWithTag(_scoreTextTag).GetComponent<TMP_Text>();
+		
 	}
 
 	/// <summary>
@@ -65,24 +68,23 @@ public class ResultScore : MonoBehaviour
 	/// </summary>
 	private void Update ()
 	{
-		//今回のスコアとハイスコアを比較し、今回のスコアが大きかったら
-		if(PlayerPrefs.GetInt(_score) > PlayerPrefs.GetInt(_highScore, 0))
+		//Nキー、Yボタンが押されたら
+		if (Input.GetButtonDown(_nextStageInput))
 		{
-			//ハイスコアに今回のスコアを保存する
-			PlayerPrefs.SetInt(_highScore, PlayerPrefs.GetInt(_score));
+			PlayerPrefs.SetString("StageNumber", (int.Parse(PlayerPrefs.GetString("StageNumber")) + 1).ToString());
+			//タイトル画面へ移動する
+			SceneManager.LoadScene(_main);
 		}
-		//テキストにスコアを代入する
-		_scoreText.SetText(PlayerPrefs.GetInt(_score).ToString());
 
 		//Tキー、Bボタンが押されたら
-		if(Input.GetButtonDown(_goTitleInput))
+		if (Input.GetButtonDown(_goTitleInput))
         {
 			//タイトル画面へ移動する
 			SceneManager.LoadScene(_title);
         }
 
 		//Rキー、Aボタンが押されたら
-		if (Input.GetButtonDown(_RetryInput))
+		if (Input.GetButtonDown(_stageSelectInput))
 		{
 			//ゲーム画面へ移動する
 			SceneManager.LoadScene(_select);

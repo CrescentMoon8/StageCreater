@@ -92,9 +92,6 @@ public class StageOutputEditor : StageCreateEditor
     {
         _horizontalMaxSize = _stageTilemap.cellBounds.max.x + (-_stageTilemap.cellBounds.min.x);
         _verticalMaxSize = _stageTilemap.cellBounds.max.y + (-_stageTilemap.cellBounds.min.y);
-
-        Debug.Log(_horizontalMaxSize);
-        Debug.Log(_verticalMaxSize);
     }
 
     private void ImageToArray()

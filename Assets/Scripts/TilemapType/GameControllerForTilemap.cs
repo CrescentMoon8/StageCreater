@@ -56,18 +56,11 @@ public class GameControllerForTilemap : MonoBehaviour
 	private string _goTitleInput = "GoTitle";
 	#endregion
 
-	#region ブロック
-	// 動かせるブロックを生成するまでの時間
-	private float _createBlockTime = 0f;
-	// 動かせるブロックを生成する間隔
-	private float _createBlockInterval = 5f;
-	#endregion
-
 	#region ゲーム終了後
 	// ゲームが終了してからの時間
 	private float _afterGameTime = 0f;
 	// ゲームが終了してからResultシーンへ移動する時間
-	private const int MOVE_SCENE_TIME = 3;
+	private const int MOVE_SCENE_TIME = 1;
 	#endregion
 
 	#region UI
@@ -83,16 +76,10 @@ public class GameControllerForTilemap : MonoBehaviour
 	private string _result = "Result";
 	#endregion
 
-	#region スコア
-	// スコアの保存名称
-	private string _score = "Score";
-	#endregion
-
 	#region クラス
 	// 各クラスの定義
 	private StageArrayDataForTilemap _stageArrayDataForTilemap = default;
 	private MoveManagerForTilemap _moveManagerForTilemap = default;
-	private ScoreManagerForTilemap _scoreManagerForTilemap = default;
 	#endregion
 
 	#endregion

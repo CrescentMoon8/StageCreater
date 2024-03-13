@@ -8,23 +8,23 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.AddressableAssets;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
+using TMPro;
 
 public class StageArrayDataForTilemap : MonoBehaviour
 {
 	#region 変数
 	private Tilemap _tilemap = default;
+	private Tilemap _targetTilemap = default;
     [SerializeField]
     private List<TileBase> _setTileList = new List<TileBase>();
-    [SerializeField]
-    private TileBase _playerTile = default;
 
-    [Header("ステージの横の最大サイズ")]
-	[SerializeField]
+    [SerializeField]
+    private int _targetAreaTileIndex = 3;
+    [SerializeField]
+    private int _playerTileIndex = 4;
+
 	private int _horizontalMaxSize = default;
-	[Header("ステージの縦の最大サイズ")]
-	[SerializeField]
+
 	private int _verticalMaxSize = default;
 
     private string[] _row = default;
@@ -33,7 +33,21 @@ public class StageArrayDataForTilemap : MonoBehaviour
     // ブロックがターゲットの上にある個数
     private int _targetCount = 0;
     // ターゲットの最大数
-    private int _targetMaxCount = 3;
+    private int _targetMaxCount = 0;
+
+    private Camera _mainCamera = default;
+    private Vector3 _defaultPos = new Vector3(0, 1f, -10);
+    private const float DIFFICULT_POS = 0.5f;
+
+    [SerializeField]
+    private TMP_Text _stageText = default;
+
+    [SerializeField]
+    private bool _isPlayDebug = false;
+    [SerializeField]
+    private bool _isLoadDebug = false;
+    [SerializeField]
+    private int _testStageNumber = 1;
 
     #endregion
 
@@ -59,15 +73,27 @@ public class StageArrayDataForTilemap : MonoBehaviour
 	public void Initialize()
 	{
 		_tilemap = GameObject.FindWithTag("StageMap").GetComponent<Tilemap>();
-		// マップの最大サイズを設定する
-		SetStageMaxSize();
+		_targetTilemap = GameObject.FindWithTag("TargetMap").GetComponent<Tilemap>();
+
+        if(!_isPlayDebug)
+        {
+            _targetTilemap.ClearAllTiles();
+        }
+
+        // マップの最大サイズを設定する
+        SetStageMaxSize();
 		// ステージ、ターゲットの配列の大きさを設定する
 		StageArray = new int[_verticalMaxSize, _horizontalMaxSize];
 		TargetData = new int[_verticalMaxSize, _horizontalMaxSize];
-        CreateStage();
+        if(!_isPlayDebug)
+        {
+            CreateStage();
+        }
 		// マップイメージを配列に格納する
 		ImageToArray();
 
+        _mainCamera = Camera.main;
+        _mainCamera.transform.position = _defaultPos + new Vector3(_horizontalMaxSize * DIFFICULT_POS, -_verticalMaxSize * DIFFICULT_POS, 0);
 	}
 
 	/// <summary>
@@ -98,36 +124,53 @@ public class StageArrayDataForTilemap : MonoBehaviour
     /// </summary>
     private void SetStageMaxSize()
     {
-        _horizontalMaxSize = _tilemap.cellBounds.max.x;
-        _verticalMaxSize = -_tilemap.cellBounds.min.y;
-
-        string stageNumber = PlayerPrefs.GetString("StageNumber");
-
-        // CSVファイルを読み込む
-        TextAsset inputData = Addressables.LoadAssetAsync<TextAsset>(_stageName + stageNumber).WaitForCompletion();
-        string textData = inputData.text;
-
-        // 行単位に分割する
-        // そのままだと改行も入るため、RemoveEmptyEntriesで削除する
-        _row = textData.Split(new char[] { '\r', '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
-        // 行数を取得する
-        _verticalMaxSize = _row.Length;
-
-        int currentMaxSize = 0;
-
-        for (int i = 0; i < _row.Length; i++)
+        if(_isPlayDebug)
         {
-            // 列単位に分割する
-            string[] columnCheck = _row[0].Split(",");
-
-            if (currentMaxSize < columnCheck.Length)
-            {
-                currentMaxSize = columnCheck.Length;
-            }
+            _horizontalMaxSize = _tilemap.cellBounds.max.x + (-_tilemap.cellBounds.min.x);
+            _verticalMaxSize = _tilemap.cellBounds.max.y + (-_tilemap.cellBounds.min.y);
         }
+        else
+        {
+            if (_isLoadDebug)
+            {
+                _stageName = "Test" + _stageName;
+            }
+            else
+            {
+                string stageNumber = PlayerPrefs.GetString("StageNumber");
 
-        // 列数を取得する
-        _horizontalMaxSize = currentMaxSize;
+                _stageName += stageNumber;
+
+                _stageText.SetText(stageNumber);
+            }
+
+            // CSVファイルを読み込む
+            TextAsset inputData = Addressables.LoadAssetAsync<TextAsset>(_stageName).WaitForCompletion();
+            string textData = inputData.text;
+
+            // 行単位に分割する
+            // そのままだと改行も入るため、RemoveEmptyEntriesで削除する
+            _row = textData.Split(new char[] { '\r', '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
+            // 行数を取得する
+            _verticalMaxSize = _row.Length;
+
+            int currentHorizontalMaxSize = 0;
+
+            // 列の大きさを比較し、一番大きい列を見つける
+            for (int i = 0; i < _row.Length; i++)
+            {
+                // 列単位に分割する
+                string[] columnCheck = _row[0].Split(",");
+
+                if (currentHorizontalMaxSize < columnCheck.Length)
+                {
+                    currentHorizontalMaxSize = columnCheck.Length;
+                }
+            }
+
+            // 列数を取得する
+            _horizontalMaxSize = currentHorizontalMaxSize;
+        }
     }
 
 	private void CreateStage()
@@ -165,6 +208,11 @@ public class StageArrayDataForTilemap : MonoBehaviour
         Vector3Int setTilePos = new Vector3Int(x, -y);
 
         _tilemap.SetTile(setTilePos, _setTileList[tileIndex]);
+
+        if (tileIndex + 1 == _targetAreaTileIndex)
+        {
+            _targetTilemap.SetTile(setTilePos, _setTileList[tileIndex]);
+        }
     }
 
     private void ImageToArray()
@@ -187,7 +235,7 @@ public class StageArrayDataForTilemap : MonoBehaviour
             }
         }
 
-        TargetData = StageArray;
+        TargetData = (int[,])StageArray.Clone();
     }
 
     private void TileCheck(int i, int j, Vector3Int searchPos)
@@ -200,9 +248,12 @@ public class StageArrayDataForTilemap : MonoBehaviour
                 // タイルが空の部分を０にするために＋１する
                 StageArray[i, j] = k + 1;
 
-                if(_setTileList[k].Equals(_playerTile))
+                if (k + 1 == _targetAreaTileIndex)
                 {
-                    // プレイヤーの座標を代入する
+                    _targetMaxCount++;
+                }
+                else if (k + 1 == _playerTileIndex)
+                {
                     PlayerPosition = new Vector2Int(i, j);
                 }
             }
@@ -236,7 +287,7 @@ public class StageArrayDataForTilemap : MonoBehaviour
 	/// <returns>ブロックがそろっているかの有無</returns>
 	public bool OnBlockAllTargetCheck()
     {
-        // ターゲットクリア数とターゲットの最大数が一致したらブロックを破壊
+        // ターゲットクリア数とターゲットの最大数が一致しているか
         if (_targetCount == _targetMaxCount)
         {
             // ターゲットクリア数を初期化する
