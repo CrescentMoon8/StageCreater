@@ -7,20 +7,46 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
-using System.Collections;
+using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class StageNumberSetting : MonoBehaviour
 {
 	#region 変数
 	[SerializeField]
 	private EventSystem eventSystem = default;
-    #endregion
 
-    #region プロパティ
-
+    private Color32 _clearColor = new Color32(0, 125, 8, 255);
     #endregion
 
     #region メソッド
+    private void Awake()
+    {
+        List<int> stageNumberList = ButtonColorManager._clearStageNumberList;
+
+        // クリアされてれば１、されてなければ０
+        if(stageNumberList.Count > 0)
+        {
+            eventSystem.SetSelectedGameObject(this.transform.GetChild(stageNumberList[stageNumberList.Count - 1] - 1).gameObject);
+
+            for (int i = 0; i < stageNumberList.Count; i++)
+            {
+                Button button = this.transform.GetChild(stageNumberList[i] - 1).GetComponent<Button>();
+                ColorBlock colorBlock = button.colors;
+
+                colorBlock.normalColor = _clearColor;
+
+                button.colors = colorBlock;
+
+                ButtonColorManager._clearStageNumberList.RemoveAt(i);
+            }
+        }
+        else
+        {
+            eventSystem.SetSelectedGameObject(this.transform.GetChild(0).gameObject);
+        }
+    }
+
     private void Update()
     {
         if(Input.GetMouseButtonDown(0))

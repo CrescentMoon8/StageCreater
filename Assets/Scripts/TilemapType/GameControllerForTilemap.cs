@@ -69,9 +69,14 @@ public class GameControllerForTilemap : MonoBehaviour
 	private GameObject _posePanel = default;
 	#endregion
 
-	#region シーン名
-	// タイトルシーン
-	private string _title = "Title";
+	#region PlayerPrefs
+	private string _clearFlag = "ClearFlag";
+	private const int CLEAR = 1;
+    #endregion
+
+    #region シーン名
+    // タイトルシーン
+    private string _title = "Title";
 	// リザルトシーン
 	private string _result = "Result";
 	#endregion
@@ -80,6 +85,7 @@ public class GameControllerForTilemap : MonoBehaviour
 	// 各クラスの定義
 	private StageArrayDataForTilemap _stageArrayDataForTilemap = default;
 	private MoveManagerForTilemap _moveManagerForTilemap = default;
+	private AudioController _audioController = default;
 	#endregion
 
 	#endregion
@@ -93,6 +99,7 @@ public class GameControllerForTilemap : MonoBehaviour
 		// 各クラスの初期化
 		_stageArrayDataForTilemap = GetComponent<StageArrayDataForTilemap>();
 		_moveManagerForTilemap = GetComponent<MoveManagerForTilemap>();
+		_audioController = GetComponent<AudioController>();
 	}
 
 	/// <summary>
@@ -229,9 +236,13 @@ public class GameControllerForTilemap : MonoBehaviour
 			case GameState.End:
 				// ゲームが終了してからの時間を計る
 				_afterGameTime += Time.deltaTime;
+
+				_audioController.GameClearSe();
 				// ゲームが終了してから指定秒数経過したか
 				if (_afterGameTime >= MOVE_SCENE_TIME)
 				{
+					// クリアフラグをセットする
+					PlayerPrefs.SetInt(_clearFlag, CLEAR);
 					// リザルトへ移動する
 					SceneManager.LoadScene(_result);
 				}

@@ -6,7 +6,6 @@
 // 作成者:小林慎
 // ---------------------------------------------------------
 using UnityEngine;
-using System.Collections;
 
 /// <summary>
 /// SEを鳴らすためのクラス
@@ -14,12 +13,9 @@ using System.Collections;
 public class AudioController : MonoBehaviour
 {
 	#region 変数
-	//ブロックを破壊した時のSE
+	//ステージクリア時のSE
 	[SerializeField] 
-	private AudioClip _destroySe = default;
-	//ゲームレベルが上がった時のSE
-	[SerializeField] 
-	private AudioClip _levelUpSe = default;
+	private AudioClip _gameClearSe = default;
 
 	private string _seObjectTag = "SE";
 
@@ -39,23 +35,13 @@ public class AudioController : MonoBehaviour
 		// 各クラスの初期化
 		_audioSource = GameObject.FindWithTag(_seObjectTag).GetComponent<AudioSource>();
 	}
-
-	/// <summary>
-	/// ブロックが壊れた時のSEを再生する
-	/// </summary>
-	public void DestroySe()
-	{
-		// ブロックが壊れた時のSEを再生する
-		_audioSource.PlayOneShot(_destroySe);
-	}
-
 	/// <summary>
 	/// ゲームレベルが上がった時のSEを再生する
 	/// </summary>
-	public void LevelUpSe()
+	public void GameClearSe()
 	{
 		// ゲームレベルが上がった時のSEを再生する
-		_audioSource.PlayOneShot(_levelUpSe);
+		_audioSource.PlayOneShot(_gameClearSe);
 	}
 	#endregion
 }

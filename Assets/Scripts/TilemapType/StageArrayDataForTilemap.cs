@@ -133,7 +133,7 @@ public class StageArrayDataForTilemap : MonoBehaviour
         {
             if (_isLoadDebug)
             {
-                _stageName = "Test" + _stageName;
+                _stageName = "Test" + _stageName + _testStageNumber;
             }
             else
             {

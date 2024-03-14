@@ -10,6 +10,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 
+[ExecuteAlways]
 [CustomEditor(typeof(GridLayoutGroup))]
 public class ButtonNumberingEditor : Editor
 {
@@ -29,9 +30,13 @@ public class ButtonNumberingEditor : Editor
 
             foreach (Button button in _buttonParent.GetComponentsInChildren<Button>())
             {
+                button.gameObject.name = "Button" + index;
                 button.GetComponentInChildren<TMP_Text>().SetText(index.ToString());
                 index++;
             }
+
+            // 操作しないとシーンの描画がされないため、強制的にシーンの再描画を行う
+            SceneView.RepaintAll();
         }
     }
 }
